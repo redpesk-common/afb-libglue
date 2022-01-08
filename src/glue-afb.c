@@ -399,33 +399,16 @@ OnErrorExit:
     return errorMsg;
 }
 
-const char* AfbAddOneEvent (afb_api_t apiv4, json_object *configJ, afb_event_handler_x4_t callback, void *context) {
+const char* AfbAddOneEvent (afb_api_t apiv4, const char*uid, const char*pattern, afb_event_handler_x4_t callback, void *context) {
     char *errorMsg=NULL;;
-    const char *uid=NULL, *pattern=NULL;
     int err;
-
-    err= wrap_json_unpack (configJ, "{ss s?s}"
-        , "uid"     , &uid
-        , "pattern" , &pattern
-        );
-
-    if (err) {
-        errorMsg= (char*)json_object_get_string(configJ);
-        goto OnErrorExit;
-    }
-
-    if (!pattern)  {
-            pattern=uid;
-            json_object_object_add(configJ, "pattern", json_object_new_string(uid));
-    }
 
     err= afb_api_v4_event_handler_add_hookable (apiv4, pattern, callback, context);
     if (err) {
-        errorMsg= (char*)json_object_get_string(configJ);
+        errorMsg= "(hoops) afb_api_v4_event_handler_add_hookable fail";
         goto OnErrorExit;
     }
 
-    json_object_get (configJ);
     return NULL;
 
 OnErrorExit:
@@ -434,17 +417,36 @@ OnErrorExit:
 
 
 const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handler_x4_t callback) {
-    const char *errorMsg;
+    const char *errorMsg, *uid, *pattern;
+    int err;
 
     if (json_object_is_type(configJ, json_type_array)) {
         for (int idx=0; idx < json_object_array_length(configJ); idx++) {
-            json_object *verbJ= json_object_array_get_idx (configJ, idx);
-            errorMsg= AfbAddOneEvent (apiv4, verbJ, callback, verbJ);
+            json_object *eventJ= json_object_array_get_idx (configJ, idx);
+            pattern=NULL;
+            err= wrap_json_unpack (eventJ, "{ss s?s}"
+                , "uid", &uid
+                , "pattern", &pattern
+            );
+            if (err) {
+                errorMsg=json_object_get_string(eventJ);
+                goto OnErrorExit;
+            }
+
+            errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, eventJ);
             if (errorMsg) goto OnErrorExit;
         }
 
     } else {
-        errorMsg= AfbAddOneEvent (apiv4, configJ, callback, configJ);
+        err= wrap_json_unpack (configJ,  "{ss s?s}"
+            , "uid", &uid
+            , "pattern", &pattern
+        );
+        if (err) {
+            errorMsg=json_object_get_string(configJ);
+            goto OnErrorExit;
+        }
+        errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, configJ);
         if (errorMsg) goto OnErrorExit;
     }
 
@@ -484,7 +486,7 @@ static int AfbApiConfig (json_object *configJ, AfbApiConfigT *config) {
     // allocate config and set defaults
     memcpy (config, &apiConfigDflt, sizeof(AfbApiConfigT));
 
-    err= wrap_json_unpack (configJ, "{ss s?s s?s s?i s?s s?b s?o s?s s?s s?b s?o s?o}"
+    err= wrap_json_unpack (configJ, "{ss s?s s?s s?i s?s s?b s?o s?s s?s s?b s?o s?o s?s}"
         , "uid"    , &config->uid
         , "api"    , &config->api
         , "info"   , &config->info
@@ -497,6 +499,7 @@ static int AfbApiConfig (json_object *configJ, AfbApiConfigT *config) {
         , "lazy"   , &config->lazy
         , "alias"  , &config->aliasJ
         , "events" , &config->eventsJ
+        , "provide", &config->provide
         );
     if (err) goto OnErrorExit;
 
@@ -1166,8 +1169,8 @@ OnErrorExit:
 
 typedef struct {
     AfbBinderHandleT *binder;
-    json_object *configJ;
     AfbStartupCb callback;
+    void *config;
     void *context;
 } AfbBinderInitT;
 
@@ -1205,7 +1208,7 @@ void BinderStartCb (int signum, void *context) {
 
     // start user startup function
     if (init->callback) {
-        status= init->callback (init->configJ, init->context);
+        status= init->callback (init->config, init->context);
         if (status < 0) {
             errorMsg= "startup abort";
             goto OnErrorExit;
@@ -1234,9 +1237,9 @@ int AfbBinderGetLogMask(AfbBinderHandleT *binder) {
 }
 
 // start binder scheduler
-int AfbBinderStart (AfbBinderHandleT *binder, json_object *configJ, AfbStartupCb callback, void *context) {
+int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context) {
     AfbBinderInitT *init = calloc(1, sizeof(AfbBinderInitT));
-    init->configJ= configJ;
+    init->config= config;
     init->binder= binder;
     init->context=context;
     init->callback= callback;

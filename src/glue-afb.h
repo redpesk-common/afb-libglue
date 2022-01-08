@@ -27,13 +27,13 @@
 #include <libafb/afb-v4.h>
 
 typedef struct AfbBinderHandleS AfbBinderHandleT;
-typedef int (*AfbStartupCb) (json_object *configJ, void *context);
+typedef int (*AfbStartupCb) (void *config, void *context);
 
 const char* AfbBinderConfig(json_object *configJ, AfbBinderHandleT **handle);
 const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ);
 const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ);
 const char* AfbApiCreate   (AfbBinderHandleT *binder, json_object *configJ, afb_api_t *afbApi, afb_api_callback_t usrApiCb, afb_req_callback_x4_t usrInfoCb, afb_req_callback_x4_t usrRqtCb, afb_event_handler_x4_t usrEvtCb, void *userData);
-int AfbBinderStart (AfbBinderHandleT *binder, json_object *configJ, AfbStartupCb callback, void *context);
+int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context);
 void AfbBinderExit(AfbBinderHandleT *binder, int exitcode);
 int AfbBinderGetLogMask(AfbBinderHandleT *binder);
 afb_api_t AfbBinderGetApi (AfbBinderHandleT *binder);
@@ -42,4 +42,4 @@ const char* AfbAddVerbs (AfbBinderHandleT *binder, afb_api_t apiv4, json_object 
 const char* AfbAddOneVerb (AfbBinderHandleT *binder, afb_api_t apiv4, json_object *configJ, afb_req_callback_t callback, void *vcbData);
 const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handler_t callback);
 const char* AfbBinderInfo (AfbBinderHandleT *binder, const char*key);
-const char* AfbAddOneEvent (afb_api_t apiv4, json_object *configJ, afb_event_handler_x4_t callback, void *context);
+const char* AfbAddOneEvent (afb_api_t apiv4, const char*uid, const char*pattern, afb_event_handler_x4_t callback, void *context);
