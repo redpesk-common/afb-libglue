@@ -1246,7 +1246,7 @@ int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callbac
     binderCtx->context=context;
     binderCtx->callback= callback;
  
-    if (binder->config->poolThreadMax > binder->config->poolThreadSize) binder->config->poolThreadMax = binder->config->poolThreadSize;
+    if (binder->config->poolThreadMax > binder->config->poolThreadSize+1) binder->config->poolThreadMax = binder->config->poolThreadSize+1;
     int status= afb_sched_start(binder->config->poolThreadMax, binder->config->poolThreadSize, binder->config->maxJobs, BinderStartCb, binderCtx);
     return status;
 }
