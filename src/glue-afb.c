@@ -54,7 +54,7 @@ void set_logmask(int lvl);
 #define DEFAULT_BINDER_INTERFACE "*"
 #define DEFAULT_JOBS_MAX 200
 #define DEFAULT_JOBS_MIN 10
-#define DEFAULT_THREADS_MIN 1
+#define DEFAULT_THREADS_POOL 2
 #define DEFAULT_THREADS_MAX 5
 
 // make our live simpler
@@ -92,8 +92,8 @@ typedef struct {
     json_object* extendJ;
     json_object* ldpathJ;
 
-    const int maxThreads;
-    const int minThreads;
+    int poolThreadMax;
+    const int poolThreadSize;
     const int maxJobs;
     const int minJobs;
 
@@ -138,8 +138,8 @@ static AfbBinderConfigT binderConfigDflt = {
     .timeout= DEFAULT_API_TIMEOUT,
     .rootdir=".",
 
-    .maxThreads=DEFAULT_THREADS_MAX,
-    .minThreads=DEFAULT_THREADS_MIN,
+    .poolThreadMax=DEFAULT_THREADS_MAX,
+    .poolThreadSize=DEFAULT_THREADS_POOL,
     .maxJobs= DEFAULT_JOBS_MAX,
     .minJobs= DEFAULT_JOBS_MIN,
 
@@ -728,7 +728,7 @@ static AfbBinderConfigT* BinderConfig (json_object *configJ) {
     AfbBinderConfigT *config= calloc (1, sizeof(AfbBinderConfigT));
     memcpy (config, &binderConfigDflt, sizeof(AfbBinderConfigT));
 
-    err= wrap_json_unpack (configJ, "{ss s?s s?i s?i s?b s?i s?s s?s s?s s?s s?s s?o s?o s?o s?o s?o !}"
+    err= wrap_json_unpack (configJ, "{ss s?s s?i s?i s?b s?i s?s s?s s?s s?s s?s s?o s?o s?o s?o s?o s?i s?i !}"
         , "uid"    , &config->uid
         , "info"   , &config->info
         , "verbose", &config->verbose
@@ -745,6 +745,8 @@ static AfbBinderConfigT* BinderConfig (json_object *configJ) {
         , "extentions", &config->extendJ
         , "ldpath", &config->ldpathJ
         , "acls", &aclsJ
+        , "thread-pool", &config->poolThreadSize
+        , "thread-max" , &config->poolThreadMax
         );
     if (err) goto OnErrorExit;
 
@@ -1238,12 +1240,13 @@ int AfbBinderGetLogMask(AfbBinderHandleT *binder) {
 
 // start binder scheduler
 int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context) {
-    AfbBinderInitT *init = calloc(1, sizeof(AfbBinderInitT));
-    init->config= config;
-    init->binder= binder;
-    init->context=context;
-    init->callback= callback;
-
-    int status= afb_sched_start(binder->config->maxThreads, 0, binder->config->maxJobs, BinderStartCb, init);
+    AfbBinderInitT *binderCtx = calloc(1, sizeof(AfbBinderInitT));
+    binderCtx->config= config;
+    binderCtx->binder= binder;
+    binderCtx->context=context;
+    binderCtx->callback= callback;
+ 
+    if (binder->config->poolThreadMax > binder->config->poolThreadSize) binder->config->poolThreadMax = binder->config->poolThreadSize;
+    int status= afb_sched_start(binder->config->poolThreadMax, binder->config->poolThreadSize, binder->config->maxJobs, BinderStartCb, binderCtx);
     return status;
 }

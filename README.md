@@ -58,6 +58,8 @@ Full json configuration
     , "extentions":{}    // optional extention configuration
     , "ldpath": ["/opt/helloworld-binding/lib","/usr/local/helloworld-binding/lib"]// binding global search path
     , "acls": {} // optional access control list
+    , "thread-pool": 1   // thread pool size. Note than standard operations: verb,event,timer,... do not extend thread pool. When needed they are pushed on waiting queue.
+    , "thread-max" : 1   // autoclean thread pool when bigger than max (may temporaly get bigger)   
 }
 ```
 
