@@ -1224,7 +1224,7 @@ void BinderStartCb (int signum, void *context) {
     return;
 
 OnErrorExit:
-    ERROR ("BinderStart: fail to start http port=%d error=[%s]", binder->config->httpd.port, errorMsg);
+    WARNING ("BinderStart: exited message=[%s]", errorMsg);
     errorMsg= "startup abort";
     AfbBinderExit(binder, status);
 }
@@ -1245,7 +1245,7 @@ int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callbac
     binderCtx->binder= binder;
     binderCtx->context=context;
     binderCtx->callback= callback;
- 
+
     if (binder->config->poolThreadMax > binder->config->poolThreadSize+1) binder->config->poolThreadMax = binder->config->poolThreadSize+1;
     int status= afb_sched_start(binder->config->poolThreadMax, binder->config->poolThreadSize, binder->config->maxJobs, BinderStartCb, binderCtx);
     return status;
