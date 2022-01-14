@@ -153,15 +153,15 @@ static AfbBinderConfigT binderConfigDflt = {
 };
 
 typedef enum {
-    LUA_EXPORT_PRIVATE=0,
-    LUA_EXPORT_RESTRICTED,
-    LUA_EXPORT_PUBLIC,
+    AFB_EXPORT_PRIVATE=0,
+    AFB_EXPORT_RESTRICTED,
+    AFB_EXPORT_PUBLIC,
 } LuaApiExportE;
 
 const nsKeyEnumT afbApiExportKeys[]= {
-    {"private", LUA_EXPORT_PRIVATE},
-    {"restricted", LUA_EXPORT_RESTRICTED},
-    {"public", LUA_EXPORT_PUBLIC},
+    {"private", AFB_EXPORT_PRIVATE},
+    {"restricted", AFB_EXPORT_RESTRICTED},
+    {"public", AFB_EXPORT_PUBLIC},
 
     {NULL, -1} // terminator/on-error
 };
@@ -418,6 +418,7 @@ OnErrorExit:
 
 const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handler_x4_t callback) {
     const char *errorMsg, *uid, *pattern;
+    AfbVcbDataT *vcbData;
     int err;
 
     if (json_object_is_type(configJ, json_type_array)) {
@@ -433,7 +434,11 @@ const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handl
                 goto OnErrorExit;
             }
 
-            errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, eventJ);
+            vcbData= calloc (1, sizeof(AfbVcbDataT));
+            vcbData->magic= (void*)AfbAddVerbs;
+            vcbData->configJ= eventJ;
+            json_object_get(vcbData->configJ);
+            errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, vcbData);
             if (errorMsg) goto OnErrorExit;
         }
 
@@ -446,6 +451,10 @@ const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handl
             errorMsg=json_object_get_string(configJ);
             goto OnErrorExit;
         }
+        vcbData= calloc (1, sizeof(AfbVcbDataT));
+        vcbData->configJ= configJ; 
+        json_object_get(vcbData->configJ);
+        vcbData->magic= (void*)AfbAddVerbs;
         errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, configJ);
         if (errorMsg) goto OnErrorExit;
     }
@@ -456,20 +465,27 @@ OnErrorExit:
     return errorMsg;
 }
 
-
-
 const char* AfbAddVerbs (AfbBinderHandleT *binder, afb_api_t apiv4, json_object *configJ, afb_req_callback_x4_t callback) {
     const char *errorMsg;
+    AfbVcbDataT *vcbData;
 
     if (json_object_is_type(configJ, json_type_array)) {
         for (int idx=0; idx < json_object_array_length(configJ); idx++) {
             json_object *verbJ= json_object_array_get_idx (configJ, idx);
-            errorMsg= AfbAddOneVerb (binder, apiv4, verbJ, callback, verbJ);
+            vcbData= calloc (1, sizeof(AfbVcbDataT));
+            vcbData->magic= (void*)AfbAddVerbs;
+            vcbData->configJ= verbJ;
+            json_object_get(vcbData->configJ);
+            errorMsg= AfbAddOneVerb (binder, apiv4, verbJ, callback, vcbData);
             if (errorMsg) goto OnErrorExit;
         }
 
     } else {
-        errorMsg= AfbAddOneVerb (binder, apiv4, configJ, callback, configJ);
+        vcbData= calloc (1, sizeof(AfbVcbDataT));
+        vcbData->configJ= configJ; 
+        json_object_get(vcbData->configJ);
+        vcbData->magic= (void*)AfbAddVerbs;
+        errorMsg= AfbAddOneVerb (binder, apiv4, configJ, callback, vcbData);
         if (errorMsg) goto OnErrorExit;
     }
 
@@ -514,7 +530,7 @@ static int AfbApiConfig (json_object *configJ, AfbApiConfigT *config) {
     if (config->verbose) config->verbose= verbosity_to_mask(config->verbose);
 
     // if restricted provide a default URI
-    if (config->export == LUA_EXPORT_RESTRICTED && !config->uri) {
+    if (config->export == AFB_EXPORT_RESTRICTED && !config->uri) {
         char uri[256];
         snprintf (uri, sizeof(uri), "unix:@%s", config->uid);
         config->uri= strdup (uri);
@@ -610,15 +626,15 @@ const char* AfbApiCreate (AfbBinderHandleT *binder, json_object *configJ, afb_ap
 
     apiInit.apiCallSet   = binder->privateApis;
     switch (config.export) {
-        case LUA_EXPORT_PUBLIC:
+        case AFB_EXPORT_PUBLIC:
             apiInit.apiDeclSet= binder->publicApis;
             break;
 
-        case LUA_EXPORT_RESTRICTED:
+        case AFB_EXPORT_RESTRICTED:
             apiInit.apiDeclSet= binder->restrictedApis;
             break;
 
-        case LUA_EXPORT_PRIVATE:
+        case AFB_EXPORT_PRIVATE:
             apiInit.apiDeclSet= binder->privateApis;
             break;
 
@@ -641,7 +657,7 @@ const char* AfbApiCreate (AfbBinderHandleT *binder, json_object *configJ, afb_ap
     }
 
     // if URI provided and api export allow then export it now
-    if (config.uri && config.export != LUA_EXPORT_PRIVATE) {
+    if (config.uri && config.export != AFB_EXPORT_PRIVATE) {
         err= afb_api_ws_add_server(config.uri, binder->restrictedApis, binder->restrictedApis);
         if (err) {
             errorMsg= "Fail to parse afbApi json config";
@@ -678,15 +694,15 @@ const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ) {
     }
 
     switch (config.export) {
-        case LUA_EXPORT_PUBLIC:
+        case AFB_EXPORT_PUBLIC:
             apiset= binder->publicApis;
             break;
 
-        case LUA_EXPORT_RESTRICTED:
+        case AFB_EXPORT_RESTRICTED:
             apiset= binder->restrictedApis;
             break;
 
-        case LUA_EXPORT_PRIVATE:
+        case AFB_EXPORT_PRIVATE:
         default:
             apiset=binder->privateApis;
             break;
@@ -720,7 +736,7 @@ const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ) {
     return errorMsg;
 }
 
-static AfbBinderConfigT* BinderConfig (json_object *configJ) {
+static AfbBinderConfigT* BinderParseConfig (json_object *configJ) {
     int err;
     json_object *aclsJ=NULL;
 
@@ -828,7 +844,7 @@ char* AfbBinderHttpd(AfbBinderHandleT *binder) {
 	// set server rootdir path
     status= afb_hsrv_add_alias(binder->hsrv, "", afb_common_rootdir_get_fd(), binder->config->httpd.basedir, -10, 1);
     if (status != AFB_HSRV_OK) {
-		errorMsg= "Registering httpd rootdir";
+		errorMsg= "Registering httpd basedir";
 		goto OnErrorExit;
     }
 
@@ -916,11 +932,11 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
     int exportMod= utilLabel2Value(afbApiExportKeys, export);
     apiCallSet= binder->privateApis;
     switch (exportMod) {
-        case LUA_EXPORT_PUBLIC:
+        case AFB_EXPORT_PUBLIC:
             apiDeclSet= binder->publicApis;
             break;
 
-        case LUA_EXPORT_RESTRICTED:
+        case AFB_EXPORT_RESTRICTED:
             apiDeclSet= binder->restrictedApis;
             if (!uri) {
                 char buffer[256];
@@ -929,7 +945,7 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
             }
             break;
 
-        case LUA_EXPORT_PRIVATE:
+        case AFB_EXPORT_PRIVATE:
             apiDeclSet= binder->privateApis;
             break;
 
@@ -974,7 +990,7 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
         goto OnErrorExit;
     }
 
-    if (uri && exportMod != LUA_EXPORT_PRIVATE) {
+    if (uri && exportMod != AFB_EXPORT_PRIVATE) {
         err= afb_api_ws_add_server(uri, apiDeclSet, apiDeclSet);
         if (err) goto OnErrorExit;
     }
@@ -1008,14 +1024,14 @@ static int AfbBinderCtrlCb(afb_api_t apiv4, afb_ctlid_t ctlid, afb_ctlarg_t ctla
     return 0;
 }
 
-const char* AfbBinderConfig (json_object *configJ, AfbBinderHandleT **handle) {
+const char* AfbBinderConfig (json_object *configJ, AfbBinderHandleT **handle, void *userdata) {
     const char *errorMsg=NULL;;
     AfbBinderConfigT* config=NULL;
     AfbBinderHandleT *binder=NULL;
     int status;
     unsigned traceFlags;
 
-    config= BinderConfig (configJ);
+    config= BinderParseConfig (configJ);
 	if (!config) {
         errorMsg= "fail to parse binding config";
         goto OnErrorExit;
@@ -1058,6 +1074,10 @@ const char* AfbBinderConfig (json_object *configJ, AfbBinderHandleT **handle) {
         errorMsg= "failed to create internal private binder API";
         goto OnErrorExit;
     }
+
+    // add userdata to main binder api
+    if (userdata) afb_api_set_userdata(binder->apiv4, userdata);
+
     afb_api_v4_set_mainctl(binder->apiv4, AfbBinderCtrlCb);
 
 	afb_global_api_init(binder->privateApis);

@@ -26,10 +26,18 @@
 #include <json-c/json.h>
 #include <libafb/afb-v4.h>
 
+typedef struct {
+    void* magic;
+    json_object *configJ;
+    void *callback;
+    void *userdata;
+    void *state;
+} AfbVcbDataT;
+
 typedef struct AfbBinderHandleS AfbBinderHandleT;
 typedef int (*AfbStartupCb) (void *config, void *context);
 
-const char* AfbBinderConfig(json_object *configJ, AfbBinderHandleT **handle);
+const char* AfbBinderConfig(json_object *configJ, AfbBinderHandleT **handle, void* userdata);
 const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ);
 const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ);
 const char* AfbApiCreate   (AfbBinderHandleT *binder, json_object *configJ, afb_api_t *afbApi, afb_api_callback_t usrApiCb, afb_req_callback_x4_t usrInfoCb, afb_req_callback_x4_t usrRqtCb, afb_event_handler_x4_t usrEvtCb, void *userData);
