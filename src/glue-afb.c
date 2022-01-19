@@ -437,6 +437,7 @@ const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handl
             vcbData= calloc (1, sizeof(AfbVcbDataT));
             vcbData->magic= (void*)AfbAddVerbs;
             vcbData->configJ= eventJ;
+            vcbData->uid= uid;
             json_object_get(vcbData->configJ);
             errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, vcbData);
             if (errorMsg) goto OnErrorExit;
@@ -455,6 +456,7 @@ const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handl
         vcbData->configJ= configJ; 
         json_object_get(vcbData->configJ);
         vcbData->magic= (void*)AfbAddVerbs;
+        vcbData->uid=uid;
         errorMsg= AfbAddOneEvent (apiv4, uid, pattern, callback, configJ);
         if (errorMsg) goto OnErrorExit;
     }
@@ -476,6 +478,7 @@ const char* AfbAddVerbs (AfbBinderHandleT *binder, afb_api_t apiv4, json_object 
             vcbData->magic= (void*)AfbAddVerbs;
             vcbData->configJ= verbJ;
             json_object_get(vcbData->configJ);
+            vcbData->uid= json_object_get_string (json_object_object_get(verbJ, "uid"));
             errorMsg= AfbAddOneVerb (binder, apiv4, verbJ, callback, vcbData);
             if (errorMsg) goto OnErrorExit;
         }
@@ -485,6 +488,7 @@ const char* AfbAddVerbs (AfbBinderHandleT *binder, afb_api_t apiv4, json_object 
         vcbData->configJ= configJ; 
         json_object_get(vcbData->configJ);
         vcbData->magic= (void*)AfbAddVerbs;
+        vcbData->uid= json_object_get_string (json_object_object_get(configJ, "uid"));
         errorMsg= AfbAddOneVerb (binder, apiv4, configJ, callback, vcbData);
         if (errorMsg) goto OnErrorExit;
     }
@@ -1258,7 +1262,7 @@ int AfbBinderGetLogMask(AfbBinderHandleT *binder) {
     return logmask;
 }
 
-// start binder scheduler
+// start binder scheduler within a new thread
 int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context) {
     AfbBinderInitT *binderCtx = calloc(1, sizeof(AfbBinderInitT));
     binderCtx->config= config;
@@ -1269,4 +1273,16 @@ int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callbac
     if (binder->config->poolThreadMax > binder->config->poolThreadSize+1) binder->config->poolThreadMax = binder->config->poolThreadSize+1;
     int status= afb_sched_start(binder->config->poolThreadMax, binder->config->poolThreadSize, binder->config->maxJobs, BinderStartCb, binderCtx);
     return status;
+}
+
+// start binder scheduler within current thread context
+int AfbBinderEnter (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context) {
+    AfbBinderInitT *binderCtx = calloc(1, sizeof(AfbBinderInitT));
+    binderCtx->config= config;
+    binderCtx->binder= binder;
+    binderCtx->context=context;
+    binderCtx->callback= callback;
+
+    BinderStartCb(0, binderCtx);
+    return 0;
 }

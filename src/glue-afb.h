@@ -29,6 +29,7 @@
 typedef struct {
     void* magic;
     json_object *configJ;
+    const char *uid;
     void *callback;
     void *userdata;
     void *state;
@@ -42,6 +43,7 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ);
 const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ);
 const char* AfbApiCreate   (AfbBinderHandleT *binder, json_object *configJ, afb_api_t *afbApi, afb_api_callback_t usrApiCb, afb_req_callback_x4_t usrInfoCb, afb_req_callback_x4_t usrRqtCb, afb_event_handler_x4_t usrEvtCb, void *userData);
 int AfbBinderStart (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context);
+int AfbBinderEnter (AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context);
 void AfbBinderExit(AfbBinderHandleT *binder, int exitcode);
 int AfbBinderGetLogMask(AfbBinderHandleT *binder);
 afb_api_t AfbBinderGetApi (AfbBinderHandleT *binder);
