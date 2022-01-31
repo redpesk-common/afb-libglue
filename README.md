@@ -220,6 +220,42 @@ Note:
  * They is no default for configJ, that is not parsed by AfbBinderStart.
  * When executing startupCb all binder apis/services are ready, also this callback may use every existing libafb apis.
 
+
+## int AfbBinderEnter(AfbBinderHandleT *binder, void *config, AfbStartupCb callback, void *context); + void GluePollRunJobs(void)
+
+When not using AFB mainloop, ```AfbBinderEnter``` replaces ```AfbBinderStart```. Fonctionnaly both functions do the same thing, except that ```AfbBinderEnter``` does not enter AFB mainloop, but expect the user to process AFB events/jobs from its own mainloop. 
+
+Callback ```GluePollRunJobs``` should be called each time AFB has waiting jobs in its pool. A typical example is the interface with nodejs that requires libuv mainloop as in following code snipet. 
+
+```C
+
+// Map LibUV mainloop event callback onto LibAfb signature
+static void GlueOnPoolUvCb(uv_poll_t* handle, int status, int events) {
+    GluePollRunJobs();
+}
+
+// retreive libafb jobs epool file handle
+int afbfd = afb_ev_mgr_get_fd();
+if (afbfd < 0) goto OnErrorExit;
+
+// retreive nodejs libuv jobs file loop handle
+statusN = napi_get_uv_event_loop(env, &loopU);
+if (statusN != napi_ok) goto OnErrorExit;
+
+// add libafb epool fd into libuv pool
+statusU = uv_poll_init(loopU, &poolU, afbfd);
+if (statusU < 0) goto OnErrorExit;
+
+// register callback handle for libafb jobs
+statusU = uv_poll_start(&poolU, UV_READABLE, GlueOnPoolUvCb);
+if (statusU < 0) goto OnErrorExit;
+
+// enter libuv mainloop 
+statusU= uv_run(loopU, UV_RUN_DEFAULT);
+if (statusU < 0) goto OnErrorExit;
+
+```
+
 ## void AfbBinderExit(AfbBinderHandleT *binder, int exitcode);
 
 Force binder to exit from the mainloop with corresponding status.

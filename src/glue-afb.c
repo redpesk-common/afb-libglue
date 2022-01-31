@@ -415,6 +415,21 @@ OnErrorExit:
     return errorMsg;
 }
 
+const char* AfbDelOneEvent(afb_api_t apiv4, const char*pattern, void **context) {
+    char *errorMsg=NULL;;
+    int err;
+
+    err= afb_api_v4_event_handler_del_hookable(apiv4, pattern, context);
+    if (err) {
+        errorMsg= "(hoops) afb_api_v4_event_handler_del_hookable fail";
+        goto OnErrorExit;
+    }
+
+    return NULL;
+
+OnErrorExit:
+    return errorMsg;
+}
 
 const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handler_x4_t callback) {
     const char *errorMsg, *uid, *pattern;
@@ -742,13 +757,14 @@ const char* AfbApiImport (AfbBinderHandleT *binder, json_object *configJ) {
 
 static AfbBinderConfigT* BinderParseConfig (json_object *configJ) {
     int err;
+    json_object *ignoredJ;
     json_object *aclsJ=NULL;
 
     // allocate config and set defaults
     AfbBinderConfigT *config= calloc (1, sizeof(AfbBinderConfigT));
     memcpy (config, &binderConfigDflt, sizeof(AfbBinderConfigT));
 
-    err= wrap_json_unpack (configJ, "{ss s?s s?i s?i s?b s?i s?s s?s s?s s?s s?s s?o s?o s?o s?o s?o s?i s?i !}"
+    err= wrap_json_unpack (configJ, "{ss s?s s?i s?i s?b s?i s?s s?s s?s s?s s?s s?o s?o s?o s?o s?o s?i s?i s?o !}"
         , "uid"    , &config->uid
         , "info"   , &config->info
         , "verbose", &config->verbose
@@ -767,6 +783,7 @@ static AfbBinderConfigT* BinderParseConfig (json_object *configJ) {
         , "acls", &aclsJ
         , "thread-pool", &config->poolThreadSize
         , "thread-max" , &config->poolThreadMax
+        , "onerror", &ignoredJ
         );
     if (err) goto OnErrorExit;
 
@@ -1205,7 +1222,7 @@ void BinderStartCb (int signum, void *context) {
     const char *errorMsg=NULL;;
     AfbBinderInitT *init = (AfbBinderInitT*)context;
     AfbBinderHandleT *binder= init->binder;
-    int status;
+    int status=0;
 
     // resolve dependencies and start binding services
     status= afb_apiset_start_all_services (binder->privateApis);
@@ -1215,8 +1232,8 @@ void BinderStartCb (int signum, void *context) {
     }
 
     if (binder->config->httpd.port) {
-        status= afb_hsrv_start_tls(binder->hsrv, 15, binder->config->httpd.cert, binder->config->httpd.key);
-        if (!status) {
+        status= !afb_hsrv_start_tls(binder->hsrv, 15, binder->config->httpd.cert, binder->config->httpd.key);
+        if (status) {
             errorMsg= "Fail to start httpd service";
             goto OnErrorExit;
         }
@@ -1248,7 +1265,7 @@ void BinderStartCb (int signum, void *context) {
     return;
 
 OnErrorExit:
-    WARNING ("BinderStart: exited message=[%s]", errorMsg);
+    WARNING ("BinderStart: exit message=[%s]", errorMsg);
     errorMsg= "startup abort";
     AfbBinderExit(binder, status);
 }
@@ -1285,4 +1302,14 @@ int AfbBinderEnter (AfbBinderHandleT *binder, void *config, AfbStartupCb callbac
 
     BinderStartCb(0, binderCtx);
     return 0;
+}
+
+
+// pop afb waiting event and process them
+void GluePollRunJobs(void) {
+    afb_ev_mgr_wait_and_dispatch(0);
+    for (struct afb_job *job= afb_jobs_dequeue(0); job; job= afb_jobs_dequeue(0)) {
+        afb_jobs_run(job);
+    }
+    afb_ev_mgr_prepare();
 }
