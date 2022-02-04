@@ -43,9 +43,9 @@ typedef enum {
     GLUE_RQT_MAGIC,
     GLUE_EVT_MAGIC,
     GLUE_TIMER_MAGIC,
-    GLUE_LOCK_MAGIC,
-    GLUE_SCHED_MAGIC,
     GLUE_JOB_MAGIC,
+    GLUE_POST_MAGIC,
+    GLUE_CALL_MAGIC,
 } GlueHandleMagicsE;
 
 typedef struct {

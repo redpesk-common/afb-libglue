@@ -468,7 +468,7 @@ const char* AfbAddEvents (afb_api_t apiv4, json_object *configJ, afb_event_handl
             goto OnErrorExit;
         }
         vcbData= calloc (1, sizeof(AfbVcbDataT));
-        vcbData->configJ= configJ; 
+        vcbData->configJ= configJ;
         json_object_get(vcbData->configJ);
         vcbData->magic= (void*)AfbAddVerbs;
         vcbData->uid=uid;
@@ -500,7 +500,7 @@ const char* AfbAddVerbs (AfbBinderHandleT *binder, afb_api_t apiv4, json_object 
 
     } else {
         vcbData= calloc (1, sizeof(AfbVcbDataT));
-        vcbData->configJ= configJ; 
+        vcbData->configJ= configJ;
         json_object_get(vcbData->configJ);
         vcbData->magic= (void*)AfbAddVerbs;
         vcbData->uid= json_object_get_string (json_object_object_get(configJ, "uid"));
@@ -1237,18 +1237,17 @@ void BinderStartCb (int signum, void *context) {
             errorMsg= "Fail to start httpd service";
             goto OnErrorExit;
         }
-    }
 
-    // start interface
-    if (binder->config->httpd.intfJ) utilScanJson (binder->config->httpd.intfJ, BinderAddIntf, binder);
-    else {
-        int err= BinderAddIntf (NULL, binder);
-        if (err) {
-            errorMsg="listen fail";
-            goto OnErrorExit;
+        // start interface
+        if (binder->config->httpd.intfJ) utilScanJson (binder->config->httpd.intfJ, BinderAddIntf, binder);
+        else {
+            int err= BinderAddIntf (NULL, binder);
+            if (err) {
+                errorMsg="listen fail";
+                goto OnErrorExit;
+            }
         }
     }
-
     // start user startup function
     if (init->callback) {
         status= init->callback (init->config, init->context);
