@@ -58,6 +58,7 @@ typedef struct {
     void *state;
 } AfbVcbDataT;
 
+const char * AfbMagicToString (GlueHandleMagicsE magic);
 typedef struct AfbBinderHandleS AfbBinderHandleT;
 typedef int (*AfbStartupCb) (void *config, void *context);
 void GluePollRunJobs(void);

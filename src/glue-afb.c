@@ -219,6 +219,22 @@ const nsKeyEnumT authTypeKeys[]= {
     {NULL, -1} // terminator/on-error
 };
 
+const nsKeyEnumT glueMagics[]= {
+{"BINDER_MAGIC",GLUE_BINDER_MAGIC},
+{"API_MAGIC",GLUE_API_MAGIC},
+{"RQT_MAGIC",GLUE_RQT_MAGIC},
+{"EVT_MAGIC",GLUE_EVT_MAGIC},
+{"TIMER_MAGIC",GLUE_TIMER_MAGIC},
+{"JOB_MAGIC",GLUE_JOB_MAGIC},
+{"POST_MAGIC",GLUE_POST_MAGIC},
+{"CALL_MAGIC",GLUE_CALL_MAGIC},
+};
+
+
+const char * AfbMagicToString (GlueHandleMagicsE magic) {
+    return (utilValue2Label(glueMagics, magic));
+}
+
 static const char* AfbParseOneAcl (afbAclsHandleT *acls, int idx, json_object *permJ) {
 
     if (!json_object_is_type(permJ, json_type_array)) goto OnErrorExit;
