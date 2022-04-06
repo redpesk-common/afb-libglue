@@ -22,8 +22,7 @@ set(CMAKE_INSTALL_SO_NO_EXE 0)
 # ------------------
 set(PROJECT_NAME afb-gluelib)
 set(PROJECT_VERSION "1.0")
-set(PROJECT_PRETTY_NAME "OpenID Connect Extention for AFB-binder")
-set(PROJECT_DESCRIPTION "Provide authentication through OpenID")
+set(PROJECT_DESCRIPTION "afb-gluelib generic interface for LibAfb to scripting language")
 set(PROJECT_URL "https://github.com/redpesk-common/afb-libglue")
 set(PROJECT_ICON "icon.jpg")
 set(PROJECT_AUTHOR "Iot-Team")
@@ -81,6 +80,9 @@ set(PACKAGE_MESSAGE "Install widget file using in the target : dnf install ${PRO
 # Customize link option
 # -----------------------------
 #list(APPEND link_libraries -an-option)
+
+# generate vscode intellisense for clangd/llvm-vs-code-extensions
+set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 # Compilation options definition
 set(CONTROL_CONFIG_PATH "${CMAKE_SOURCE_DIR}/conf.d/project/etc:${CMAKE_BINARY_DIR}/package/etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc" CACHE STRING "CONTROL_CONFIG_PATH")

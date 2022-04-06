@@ -991,7 +991,7 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
             goto OnErrorExit;
     }
 
-    if (aliasJ) {
+    if (aliasJ && binder->config->httpd.port) {
         if (utilScanJson (aliasJ, BinderAddOneAlias, binder) < 0) {
 		    errorMsg= "afb_api registering aliases fail";
 		    goto OnErrorExit;
