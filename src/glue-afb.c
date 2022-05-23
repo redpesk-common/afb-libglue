@@ -294,14 +294,19 @@ OnErrorExit:
 }
 
 static afbAclsHandleT* AfbParseAcls (json_object *configJ) {
-    const char *errorMsg;
+    const char *errorMsg = "?";
     size_t count;
+    afbAclsHandleT *acls = NULL;
 
     if (! json_object_is_type (configJ, json_type_array)) goto OnErrorExit;
 
     count= json_object_array_length (configJ);
-    afbAclsHandleT *acls= calloc (1, sizeof(afbAclsHandleT));
+    acls= calloc (1, sizeof(afbAclsHandleT));
+    if (acls == NULL)
+        goto OnErrorExit;
     acls->perms= calloc (count+1, sizeof(afb_auth));
+    if (acls->perms == NULL)
+        goto OnErrorExit;
 
     for (int idx=0; idx <count; idx++) {
         json_object *permJ= json_object_array_get_idx (configJ, idx);
@@ -315,8 +320,10 @@ static afbAclsHandleT* AfbParseAcls (json_object *configJ) {
 
 OnErrorExit:
     ERROR ("AfbParseAcls:fail acl=%s", errorMsg);
-    free(acls->perms);
-    free (acls);
+    if (acls != NULL) {
+        free(acls->perms);
+        free (acls);
+    }
     return NULL;
 }
 
