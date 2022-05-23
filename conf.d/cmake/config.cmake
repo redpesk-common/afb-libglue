@@ -16,12 +16,12 @@
 # limitations under the License.
 ###########################################################################
 
-set(CMAKE_INSTALL_SO_NO_EXE 0)
+#set(CMAKE_INSTALL_SO_NO_EXE 0)
 
 # Project Info
 # ------------------
-set(PROJECT_NAME afb-gluelib)
-set(PROJECT_VERSION "1.0")
+#set(PROJECT_NAME afb-gluelib)
+#set(PROJECT_VERSION "1.0")
 set(PROJECT_DESCRIPTION "afb-gluelib generic interface for LibAfb to scripting language")
 set(PROJECT_URL "https://github.com/redpesk-common/afb-libglue")
 set(PROJECT_ICON "icon.jpg")
@@ -29,11 +29,11 @@ set(PROJECT_AUTHOR "Iot-Team")
 set(PROJECT_AUTHOR_MAIL "secretariat@iot.bzh")
 set(PROJECT_LICENSE "redpesk")
 set(PROJECT_LANGUAGES,"C")
-set(API_NAME "shell")
+#set(API_NAME "shell")
 
 # Where are stored default templates files from submodule or subtree app-templates in your project tree
 # relative to the root project directory
-set(PROJECT_CMAKE_CONF_DIR "conf.d")
+# set(PROJECT_CMAKE_CONF_DIR "conf.d")
 
 # Where are stored your external libraries for your project. This is 3rd party library that you don't maintain
 # but used and must be built and linked.
@@ -47,7 +47,7 @@ set(PROJECT_CMAKE_CONF_DIR "conf.d")
 
 # Compilation Mode (DEBUG, RELEASE)
 # ----------------------------------
-set(BUILD_TYPE "DEBUG")
+# set(BUILD_TYPE "DEBUG")
 
 # Kernel selection if needed. You can choose between a
 # mandatory version to impose a minimal version.
@@ -65,36 +65,37 @@ set(BUILD_TYPE "DEBUG")
 
 # Compiler selection if needed. Impose a minimal version.
 # -----------------------------------------------
-set (gcc_minimal_version 4.9)
+# set (gcc_minimal_version 4.9)
 
 # PKG_CONFIG required packages
 # -----------------------------
 set (PKG_REQUIRED_LIST
 	libafb
+	json-c
 )
 
 # Print a helper message when every thing is finished
 # ----------------------------------------------------
-set(PACKAGE_MESSAGE "Install widget file using in the target : dnf install ${PROJECT_NAME}")
+#set(PACKAGE_MESSAGE "Install widget file using in the target : dnf install ${PROJECT_NAME}")
 
 # Customize link option
 # -----------------------------
 #list(APPEND link_libraries -an-option)
 
 # generate vscode intellisense for clangd/llvm-vs-code-extensions
-set(CMAKE_EXPORT_COMPILE_COMMANDS on)
+#set(CMAKE_EXPORT_COMPILE_COMMANDS on)
 
 # Compilation options definition
-set(CONTROL_CONFIG_PATH "${CMAKE_SOURCE_DIR}/conf.d/project/etc:${CMAKE_BINARY_DIR}/package/etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc" CACHE STRING "CONTROL_CONFIG_PATH")
-add_definitions(-DCONTROL_CONFIG_PATH="${CONTROL_CONFIG_PATH}")
+#set(CONTROL_CONFIG_PATH "${CMAKE_SOURCE_DIR}/conf.d/project/etc:${CMAKE_BINARY_DIR}/package/etc:${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME}/etc" CACHE STRING "CONTROL_CONFIG_PATH")
+#add_definitions(-DCONTROL_CONFIG_PATH="${CONTROL_CONFIG_PATH}")
 # Use CMake generator expressions to specify only for a specific language
 # Values are prefilled with default options that is currently used.
 # Either separate options with ";", or each options must be quoted separately
 # DO NOT PUT ALL OPTION QUOTED AT ONCE , COMPILATION COULD FAILED !
 # ----------------------------------------------------------------------------
-set (C_COMPILE_OPTIONS "-Wno-shift-count-overflow" "-Wno-conversion" "-Wno-missing-field-initializers")
-set(COMPILE_OPTIONS "-Wall" "-Wextra" "-Wconversion" "-Wno-unused-parameter" "-Wno-sign-compare" "-Wno-sign-conversion" "-Wno-uninitialized" "-Werror=implicit-function-declaration" "-ffunction-sections" "-fdata-sections" "-fPIC" CACHE STRING "Compilation flags")
-set(C_COMPILE_OPTIONS "" CACHE STRING "Compilation flags for C language.")
+#set(C_COMPILE_OPTIONS "-Wno-shift-count-overflow" "-Wno-conversion" "-Wno-missing-field-initializers")
+#set(COMPILE_OPTIONS "-Wall" "-Wextra" "-Wconversion" "-Wno-unused-parameter" "-Wno-sign-compare" "-Wno-sign-conversion" "-Wno-uninitialized" "-Werror=implicit-function-declaration" "-ffunction-sections" "-fdata-sections" "-fPIC" CACHE STRING "Compilation flags")
+#set(C_COMPILE_OPTIONS "" CACHE STRING "Compilation flags for C language.")
 #set(CXX_COMPILE_OPTIONS "" CACHE STRING "Compilation flags for C++ language.")
 #set(PROFILING_COMPILE_OPTIONS "-g" "-O0" "-pg" "-Wp,-U_FORTIFY_SOURCE" CACHE STRING "Compilation flags for PROFILING build type.")
 #set(DEBUG_COMPILE_OPTIONS "-g" "-ggdb" "-Wp,-U_FORTIFY_SOURCE" CACHE STRING "Compilation flags for DEBUG build type.")
@@ -103,14 +104,14 @@ set(C_COMPILE_OPTIONS "" CACHE STRING "Compilation flags for C language.")
 
 # (BUG!!!) as PKG_CONFIG_PATH does not work [should be an env variable]
 # ---------------------------------------------------------------------
-set(INSTALL_PREFIX $ENV{HOME}/opt)
-set(CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}/lib64/pkgconfig ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
-set(LD_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64 ${CMAKE_INSTALL_PREFIX}/lib)
+#set(INSTALL_PREFIX $ENV{HOME}/opt)
+#set(CMAKE_PREFIX_PATH ${CMAKE_INSTALL_PREFIX}/lib64/pkgconfig ${CMAKE_INSTALL_PREFIX}/lib/pkgconfig)
+#set(LD_LIBRARY_PATH ${CMAKE_INSTALL_PREFIX}/lib64 ${CMAKE_INSTALL_PREFIX}/lib)
 
 # Optional location for config.xml.in
 # -----------------------------------
-set(WIDGET_ICON ${PROJECT_APP_TEMPLATES_DIR}/wgt/${PROJECT_ICON})
-set(WIDGET_CONFIG_TEMPLATE ${CMAKE_SOURCE_DIR}/conf.d/wgt/config.xml.in CACHE PATH "Path to widget config file template (config.xml.in)")
+#set(WIDGET_ICON ${PROJECT_APP_TEMPLATES_DIR}/wgt/${PROJECT_ICON})
+#set(WIDGET_CONFIG_TEMPLATE ${CMAKE_SOURCE_DIR}/conf.d/wgt/config.xml.in CACHE PATH "Path to widget config file template (config.xml.in)")
 
 # Mandatory widget Mimetype specification of the main unit
 # --------------------------------------------------------------------------
@@ -127,14 +128,14 @@ set(WIDGET_CONFIG_TEMPLATE ${CMAKE_SOURCE_DIR}/conf.d/wgt/config.xml.in CACHE PA
 #	content.src designates the relative path of the binary.
 #	For such application, only security setup is made.
 #
-set(WIDGET_TYPE application/vnd.agl.service)
+#set(WIDGET_TYPE application/vnd.agl.service)
 
 # Mandatory Widget entry point file of the main unit
 # --------------------------------------------------------------
 # This is the file that will be executed, loaded,
 # at launch time by the application framework.
 #
-set(WIDGET_ENTRY_POINT lib/afb-gdal.so)
+#set(WIDGET_ENTRY_POINT lib/afb-gdal.so)
 
 # Optional dependencies order
 # ---------------------------
