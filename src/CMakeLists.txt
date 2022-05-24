@@ -16,21 +16,20 @@
 
 PROJECT_TARGET_ADD(afb-glue)
 
-	# compile any C file starting with a lower case
-	file(GLOB CSOURCES [a-z]*.c)
-
 	# Define project Targets
-    add_library(${TARGET_NAME} SHARED ${CSOURCES})
+    add_library(${TARGET_NAME} SHARED glue-afb.c  utils-glue.c)
 
 	SET_TARGET_PROPERTIES(${TARGET_NAME} PROPERTIES
-		PREFIX "lib"
-		LABELS "LIBRARY"
-		IMPORTED_LOCATION ${CMAKE_CURRENT_BINARY_DIR}/*${TARGET_NAME}.so
 		OUTPUT_NAME ${TARGET_NAME}
 		VERSION ${PROJECT_VERSION}
 		SOVERSION ${PROJECT_VERSION_MAJOR}
 	)
 
-    INSTALL(FILES ${CHEADERS}
+    INSTALL(FILES glue-afb.h  glue-utils.h
         DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
+
+    INSTALL(TARGETS ${TARGET_NAME}
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    )
+
