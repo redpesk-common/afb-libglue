@@ -24,23 +24,17 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
-
-#include <libafb/afb-core.h>
-#include <libafb/afb-misc.h>
-#include <libafb/sys/verbose.h>
-#include <libafb/afb-extend.h>
-#include <libafb/afb-http.h>
-#include <libafb/apis/afb-api-so.h>
-#include <libafb/apis/afb-api-ws.h>
-#include <libafb/apis/afb-api-rpc.h>
-
-// TBD Jose mission prototype
-void afb_api_v4_logmask_set(struct afb_api_v4 *apiv4, int mask);
-void set_logmask(int lvl);
+#include <linux/limits.h>
 
 #include <uthash.h>
-#include <wrap-json.h>
-#include <linux/limits.h>
+
+#include <libafb/afb-core.h>
+#include <libafb/afb-apis.h>
+#include <libafb/afb-misc.h>
+#include <libafb/afb-sys.h>
+#include <libafb/afb-utils.h>
+#include <libafb/afb-extend.h>
+#include <libafb/afb-http.h>
 
 #include "glue-afb.h"
 #include "glue-utils.h"
