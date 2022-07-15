@@ -24,23 +24,17 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <fcntl.h>
-
-#include <libafb/afb-core.h>
-#include <libafb/afb-misc.h>
-#include <libafb/sys/verbose.h>
-#include <libafb/afb-extend.h>
-#include <libafb/afb-http.h>
-#include <libafb/apis/afb-api-so.h>
-#include <libafb/apis/afb-api-ws.h>
-#include <libafb/apis/afb-api-rpc.h>
-
-// TBD Jose mission prototype
-void afb_api_v4_logmask_set(struct afb_api_v4 *apiv4, int mask);
-void set_logmask(int lvl);
+#include <linux/limits.h>
 
 #include <uthash.h>
-#include <wrap-json.h>
-#include <linux/limits.h>
+
+#include <libafb/afb-core.h>
+#include <libafb/afb-apis.h>
+#include <libafb/afb-misc.h>
+#include <libafb/afb-sys.h>
+#include <libafb/afb-utils.h>
+#include <libafb/afb-extend.h>
+#include <libafb/afb-http.h>
 
 #include "glue-afb.h"
 #include "glue-utils.h"
@@ -294,14 +288,19 @@ OnErrorExit:
 }
 
 static afbAclsHandleT* AfbParseAcls (json_object *configJ) {
-    const char *errorMsg;
+    const char *errorMsg = "?";
     size_t count;
+    afbAclsHandleT *acls = NULL;
 
     if (! json_object_is_type (configJ, json_type_array)) goto OnErrorExit;
 
     count= json_object_array_length (configJ);
-    afbAclsHandleT *acls= calloc (1, sizeof(afbAclsHandleT));
+    acls= calloc (1, sizeof(afbAclsHandleT));
+    if (acls == NULL)
+        goto OnErrorExit;
     acls->perms= calloc (count+1, sizeof(afb_auth));
+    if (acls->perms == NULL)
+        goto OnErrorExit;
 
     for (int idx=0; idx <count; idx++) {
         json_object *permJ= json_object_array_get_idx (configJ, idx);
@@ -315,8 +314,10 @@ static afbAclsHandleT* AfbParseAcls (json_object *configJ) {
 
 OnErrorExit:
     ERROR ("AfbParseAcls:fail acl=%s", errorMsg);
-    free(acls->perms);
-    free (acls);
+    if (acls != NULL) {
+        free(acls->perms);
+        free (acls);
+    }
     return NULL;
 }
 
