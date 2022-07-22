@@ -952,7 +952,6 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
     int err, fileFd=0;
     const char *uid, *libpath, *export=NULL;
     json_object *aliasJ=NULL, *ldpathJ=NULL, *configJ=NULL;
-    int public=0;
 
     err= wrap_json_unpack (bindingJ, "{ss ss s?s s?o s?o s?o}"
         ,"uid"    , &uid
@@ -998,10 +997,6 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
 		    goto OnErrorExit;
         }
     }
-
-    // api public/private visibility
-    if (public) apiDeclSet= binder->publicApis;
-    else apiDeclSet= binder->privateApis;
 
     // check if binding exist within binding/binder ldpath
     if (libpath[0] != '/') {
