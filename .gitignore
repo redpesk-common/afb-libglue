@@ -5,3 +5,4 @@ nbproject/
 .*.sw*
 *.tar.gz
 __*
+.cache/

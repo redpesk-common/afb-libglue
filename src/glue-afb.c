@@ -967,6 +967,12 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
     }
 
     int exportMod= utilLabel2Value(afbApiExportKeys, export);
+
+    if (binder == NULL) {
+        errorMsg= "binder instance not properly created";
+        goto OnErrorExit;
+    }
+
     apiCallSet= binder->privateApis;
     switch (exportMod) {
         case AFB_EXPORT_PUBLIC:
@@ -1191,7 +1197,7 @@ const char* AfbBinderConfig (json_object *configJ, AfbBinderHandleT **handle, vo
     return NULL;
 
 OnErrorExit:
-    ERROR ("luaBinderConfig:fatal %s", errorMsg);
+    ERROR ("%s:fatal %s", __func__, errorMsg);
     if (binder) free (binder);
     if (config) free (config);
     *handle=NULL;
