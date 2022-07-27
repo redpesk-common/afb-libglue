@@ -953,7 +953,7 @@ const char* AfbBindingLoad (AfbBinderHandleT *binder, json_object *bindingJ) {
     const char *uid, *libpath, *export=NULL;
     json_object *aliasJ=NULL, *ldpathJ=NULL, *configJ=NULL;
 
-    err= wrap_json_unpack (bindingJ, "{ss ss s?s s?o s?o s?o}"
+    err= wrap_json_unpack (bindingJ, "{ss ss s?s s?s s?o s?o}"
         ,"uid"    , &uid
         ,"path"   , &libpath
         ,"export" , &export
