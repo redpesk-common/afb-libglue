@@ -1245,14 +1245,14 @@ void BinderStartCb (int signum, void *context) {
     // resolve dependencies and start binding services
     status= afb_apiset_start_all_services (binder->privateApis);
     if (status) {
-        errorMsg= "Fail to start all services";
+        errorMsg= "failed to start all services";
         goto OnErrorExit;
     }
 
     if (binder->config->httpd.port) {
         status= !afb_hsrv_start_tls(binder->hsrv, 15, binder->config->httpd.cert, binder->config->httpd.key);
         if (status) {
-            errorMsg= "Fail to start httpd service";
+            errorMsg= "failed to start binder httpd service";
             goto OnErrorExit;
         }
 
@@ -1261,7 +1261,7 @@ void BinderStartCb (int signum, void *context) {
         else {
             int err= BinderAddIntf (NULL, binder);
             if (err) {
-                errorMsg="listen fail";
+                errorMsg="failed to add interface to the binder";
                 goto OnErrorExit;
             }
         }
@@ -1270,20 +1270,24 @@ void BinderStartCb (int signum, void *context) {
     if (init->callback) {
         status= init->callback (init->config, init->context);
         if (status < 0) {
-            errorMsg= "startup abort";
+            errorMsg= "binder startup callback errored out";
             goto OnErrorExit;
         }
     }
     free(init);
 
     // if status == 0 keep mainloop running
-    if (!status) NOTICE ("Binder [%s] running", binder->config->uid);
-    else AfbBinderExit(binder, status);
+    if (!status)
+        NOTICE ("Binder [%s] running", binder->config->uid);
+    else
+        AfbBinderExit(binder, status);
+
+    // purposefully on a single line
     return;
 
 OnErrorExit:
-    WARNING ("BinderStart: exit message=[%s]", errorMsg);
-    errorMsg= "startup abort";
+    // errorMsg should have been set if we end up here
+    WARNING ("%s: failure: error message=[%s]", __func__, errorMsg);
     AfbBinderExit(binder, status);
 }
 
