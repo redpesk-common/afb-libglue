@@ -20,9 +20,9 @@
 
 # Project Info
 # ------------------
-#set(PROJECT_NAME afb-gluelib)
+#set(PROJECT_NAME afb-libglue)
 #set(PROJECT_VERSION "1.0")
-set(PROJECT_DESCRIPTION "afb-gluelib generic interface for LibAfb to scripting language")
+set(PROJECT_DESCRIPTION "afb-libglue generic interface for LibAfb to scripting language")
 set(PROJECT_URL "https://github.com/redpesk-common/afb-libglue")
 set(PROJECT_ICON "icon.jpg")
 set(PROJECT_AUTHOR "Iot-Team")
