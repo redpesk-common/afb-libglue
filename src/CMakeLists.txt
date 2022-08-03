@@ -33,3 +33,9 @@ PROJECT_TARGET_ADD(afb-glue)
         DESTINATION ${CMAKE_INSTALL_LIBDIR}
     )
 
+    CONFIGURE_FILE(libafb-glue.pc.in libafb-glue.pc @ONLY)
+    INSTALL(FILES
+            ${CMAKE_CURRENT_BINARY_DIR}/libafb-glue.pc
+        DESTINATION
+            ${CMAKE_INSTALL_LIBDIR}/pkgconfig
+    )

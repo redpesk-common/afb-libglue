@@ -1,0 +1,8 @@
+Name: libafb-glue
+Description: afb-libglue for interfacing afb-libafb with scripting languages
+Version: @PROJECT_VERSION@
+URL: @PROJECT_URL@
+
+Requires: libafb librp-utils
+Cflags: -I@CMAKE_INSTALL_FULL_INCLUDEDIR@
+Libs: -L@CMAKE_INSTALL_FULL_LIBDIR@ -lafb-glue -lafb -lrp-utils
